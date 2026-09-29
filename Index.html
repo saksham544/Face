@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07111f">
+<title>AI Study Guardian</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --bg:#050b14;
+    --panel:#0b1625;
+    --panel2:#101e30;
+    --border:#1e344d;
+    --text:#eef6ff;
+    --muted:#8ea5bd;
+    --accent:#22c7ff;
+    --green:#35e69a;
+    --yellow:#ffd166;
+    --red:#ff5d73;
+    --blue:#4d7cff;
+}
+
+body{
+    min-height:100vh;
+    font-family:Inter,Arial,sans-serif;
+    background:
+        radial-gradient(circle at 10% 10%,rgba(34,199,255,.12),transparent 30%),
+        radial-gradient(circle at 90% 90%,rgba(77,124,255,.12),transparent 30%),
+        var(--bg);
+    color:var(--text);
+}
+
+button,input{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.app{
+    width:min(1400px,100%);
+    margin:auto;
+    padding:20px;
+}
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.logo{
+    width:52px;
+    height:52px;
+    border-radius:16px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#22c7ff,#4d7cff);
+    color:white;
+    font-size:25px;
+    box-shadow:0 10px 35px rgba(34,199,255,.2);
+}
+
+h1{
+    font-size:clamp(24px,4vw,38px);
+}
+
+.subtitle{
+    color:var(--muted);
+    margin-top:3px;
+}
+
+.status-pill{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 15px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,.04);
+    border-radius:999px;
+    color:var(--muted);
+}
+
+.dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#64748b;
+}
+
+.dot.active{
+    background:var(--green);
+    box-shadow:0 0 15px var(--green);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.6fr) minmax(300px,.8fr);
+    gap:20px;
+}
+
+.panel{
+    background:rgba(11,22,37,.88);
+    border:1px solid var(--border);
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+.camera-panel{
+    position:relative;
+}
+
+.camera-wrap{
+    position:relative;
+    aspect-ratio:16/10;
+    background:#02060b;
+    overflow:hidden;
+}
+
+#video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transform:scaleX(-1);
+    display:block;
+}
+
+#canvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+}
+
+.camera-overlay{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+}
+
+.camera-top{
+    position:absolute;
+    top:15px;
+    left:15px;
+    right:15px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.ai-badge,
+.focus-badge{
+    padding:9px 13px;
+    border-radius:999px;
+    background:rgba(0,0,0,.58);
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.12);
+    font-size:13px;
+}
+
+.focus-badge{
+    color:var(--green);
+}
+
+.message{
+    position:absolute;
+    left:50%;
+    bottom:25px;
+    transform:translateX(-50%);
+    width:min(90%,600px);
+    text-align:center;
+    padding:15px 18px;
+    border-radius:15px;
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.12);
+    font-weight:700;
+    font-size:16px;
+}
+
+.controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:16px;
+}
+
+.btn{
+    border:0;
+    border-radius:12px;
+    padding:12px 18px;
+    color:white;
+    background:#17283d;
+    border:1px solid #28425e;
+    transition:.2s;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+    background:#1d344d;
+}
+
+.btn.primary{
+    background:linear-gradient(135deg,#16bce9,#4775ff);
+    border:0;
+}
+
+.btn.danger{
+    background:#351722;
+    border-color:#673040;
+}
+
+.btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.stats{
+    padding:16px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+}
+
+.stat{
+    background:rgba(255,255,255,.035);
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:14px;
+}
+
+.stat-label{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.stat-value{
+    margin-top:7px;
+    font-size:23px;
+    font-weight:800;
+}
+
+.sidebar{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.card{
+    padding:20px;
+}
+
+.card h2{
+    font-size:18px;
+    margin-bottom:15px;
+}
+
+.timer{
+    font-size:52px;
+    font-weight:900;
+    letter-spacing:2px;
+    text-align:center;
+    padding:12px 0 18px;
+}
+
+.progress{
+    height:10px;
+    background:#132338;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,#22c7ff,#4d7cff);
+    border-radius:20px;
+    transition:.3s;
+}
+
+.goal-row{
+    display:flex;
+    justify-content:space-between;
+    margin:10px 0;
+    color:var(--muted);
+    font-size:13px;
+}
+
+.goal-controls{
+    display:flex;
+    gap:8px;
+    margin-top:15px;
+}
+
+.goal-controls input{
+    width:100%;
+    background:#07111f;
+    color:white;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:11px;
+}
+
+.warning-list{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+}
+
+.warning{
+    padding:11px 12px;
+    border-radius:11px;
+    background:#0c1928;
+    border-left:3px solid var(--accent);
+    font-size:13px;
+    color:#cbd8e7;
+}
+
+.warning.red{
+    border-left-color:var(--red);
+}
+
+.warning.green{
+    border-left-color:var(--green);
+}
+
+.settings-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:11px 0;
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.settings-row:last-child{
+    border-bottom:0;
+}
+
+.switch{
+    width:48px;
+    height:26px;
+    position:relative;
+}
+
+.switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.slider{
+    position:absolute;
+    inset:0;
+    background:#26374a;
+    border-radius:30px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.slider:before{
+    content:"";
+    position:absolute;
+    width:20px;
+    height:20px;
+    left:3px;
+    top:3px;
+    border-radius:50%;
+    background:white;
+    transition:.2s;
+}
+
+.switch input:checked + .slider{
+    background:#168fc0;
+}
+
+.switch input:checked + .slider:before{
+    transform:translateX(22px);
+}
+
+.event-log{
+    max-height:220px;
+    overflow:auto;
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.event{
+    font-size:12px;
+    padding:9px;
+    border-radius:9px;
+    background:#091421;
+    color:var(--muted);
+}
+
+.event strong{
+    color:#dbeafe;
+}
+
+footer{
+    text-align:center;
+    color:#61788f;
+    padding:25px 0 5px;
+    font-size:12px;
+}
+
+@media(max-width:900px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:650px){
+    .app{
+        padding:10px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .timer{
+        font-size:42px;
+    }
+
+    .camera-wrap{
+        aspect-ratio:4/3;
+    }
+
+    .btn{
+        flex:1;
+        min-width:120px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+    <div class="brand">
+        <div class="logo">🧠</div>
+        <div>
+            <h1>AI Study Guardian</h1>
+            <div class="subtitle">Your camera-based study focus assistant</div>
+        </div>
+    </div>
+
+    <div class="status-pill">
+        <span class="dot" id="statusDot"></span>
+        <span id="systemStatus">System stopped</span>
+    </div>
+</header>
+
+<div class="grid">
+
+<section class="panel camera-panel">
+
+    <div class="camera-wrap">
+
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="canvas"></canvas>
+
+        <div class="camera-overlay">
+
+            <div class="camera-top">
+                <div class="ai-badge">🤖 AI MONITOR</div>
+                <div class="focus-badge" id="focusBadge">Waiting</div>
+            </div>
+
+            <div class="message" id="mainMessage">
+                Press "Start Guardian" to begin.
+            </div>
+
+        </div>
+    </div>
+
+    <div class="controls">
+
+        <button class="btn primary" id="startBtn">
+            ▶ Start Guardian
+        </button>
+
+        <button class="btn danger" id="stopBtn" disabled>
+            ■ Stop
+        </button>
+
+        <button class="btn" id="pauseBtn" disabled>
+            ⏸ Pause
+        </button>
+
+        <button class="btn" id="voiceBtn">
+            🔊 Voice ON
+        </button>
+
+    </div>
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="stat-label">Study Time</div>
+            <div class="stat-value" id="studyTime">00:00:00</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Focus Score</div>
+            <div class="stat-value" id="focusScore">100%</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Warnings</div>
+            <div class="stat-value" id="warningCount">0</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Face Status</div>
+            <div class="stat-value" id="faceStatus">—</div>
+        </div>
+
+    </div>
+
+</section>
+
+<aside class="sidebar">
+
+    <div class="panel card">
+
+        <h2>⏱ Study Session</h2>
+
+        <div class="timer" id="sessionTimer">
+            00:00:00
+        </div>
+
+        <div class="goal-row">
+            <span>Daily Goal</span>
+            <strong id="goalText">60 min</strong>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="goalProgress"></div>
+        </div>
+
+        <div class="goal-controls">
+            <input id="goalInput" type="number" min="1" max="1440" value="60">
+            <button class="btn" id="setGoalBtn">Set</button>
+        </div>
+
+    </div>
+
+    <div class="panel card">
+
+        <h2>👁️ Detection</h2>
+
+        <div class="settings-row">
+            <span>Face monitoring</span>
+            <label class="switch">
+                <input type="checkbox" id="faceToggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-row">
+            <span>Sleep detection</span>
+            <label class="switch">
+                <input type="checkbox" id="sleepToggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-row">
+            <span>Face-cover detection</span>
+            <label class="switch">
+                <input type="checkbox" id="coverToggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-row">
+            <span>Voice warnings</span>
+            <label class="switch">
+                <input type="checkbox" id="voiceToggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+    </div>
+
+    <div class="panel card">
+
+        <h2>⚠️ Recent Alerts</h2>
+
+        <div class="warning-list" id="warningList">
+
+            <div class="warning green">
+                System ready.
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="panel card">
+
+        <h2>📋 Activity Log</h2>
+
+        <div class="event-log" id="eventLog">
+            <div class="event">
+                <strong>Ready:</strong> Start the guardian to begin.
+            </div>
+        </div>
+
+    </div>
+
+</aside>
+
+</div>
+
+<footer>
+    AI Study Guardian • Camera processing happens in your browser • Developed by Saksham Shrestha
+</footer>
+
+</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js"></script>
+
+<script>
+
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const voiceBtn = document.getElementById("voiceBtn");
+
+const statusDot = document.getElementById("statusDot");
+const systemStatus = document.getElementById("systemStatus");
+
+const mainMessage = document.getElementById("mainMessage");
+const focusBadge = document.getElementById("focusBadge");
+
+const studyTimeEl = document.getElementById("studyTime");
+const sessionTimerEl = document.getElementById("sessionTimer");
+const focusScoreEl = document.getElementById("focusScore");
+const warningCountEl = document.getElementById("warningCount");
+const faceStatusEl = document.getElementById("faceStatus");
+
+const goalInput = document.getElementById("goalInput");
+const goalText = document.getElementById("goalText");
+const goalProgress = document.getElementById("goalProgress");
+const setGoalBtn = document.getElementById("setGoalBtn");
+
+const warningList = document.getElementById("warningList");
+const eventLog = document.getElementById("eventLog");
+
+const faceToggle = document.getElementById("faceToggle");
+const sleepToggle = document.getElementById("sleepToggle");
+const coverToggle = document.getElementById("coverToggle");
+const voiceToggle = document.getElementById("voiceToggle");
+
+let stream = null;
+let holistic = null;
+let camera = null;
+
+let running = false;
+let paused = false;
+let voiceEnabled = true;
+
+let sessionSeconds = 0;
+let focusedSeconds = 0;
+let distractedSeconds = 0;
+let warnings = 0;
+let dailyGoal = 60;
+
+let timerInterval = null;
+
+let lastFaceSeen = 0;
+let eyesClosedSince = 0;
+let lastWarningTime = 0;
+
+let currentState = "waiting";
+
+let lastHandWarning = 0;
+
+const WARNING_COOLDOWN = 7000;
+
+function formatTime(seconds){
+
+    seconds = Math.max(0, Math.floor(seconds));
+
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+
+    return [
+        String(h).padStart(2,"0"),
+        String(m).padStart(2,"0"),
+        String(s).padStart(2,"0")
+    ].join(":");
+}
+
+function updateTimers(){
+
+    studyTimeEl.textContent = formatTime(focusedSeconds);
+    sessionTimerEl.textContent = formatTime(sessionSeconds);
+
+    const goalSeconds = dailyGoal * 60;
+
+    const percentage = Math.min(
+        100,
+        (focusedSeconds / goalSeconds) * 100
+    );
+
+    goalProgress.style.width = percentage + "%";
+
+    goalText.textContent = dailyGoal + " min";
+
+    const total =
+        focusedSeconds + distractedSeconds;
+
+    let score = 100;
+
+    if(total > 0){
+        score = Math.round(
+            (focusedSeconds / total) * 100
+        );
+    }
+
+    focusScoreEl.textContent = score + "%";
+}
+
+function startTimer(){
+
+    clearInterval(timerInterval);
+
+    timerInterval = setInterval(()=>{
+
+        if(!running || paused) return;
+
+        sessionSeconds++;
+
+        if(currentState === "focused"){
+            focusedSeconds++;
+        }else{
+            distractedSeconds++;
+        }
+
+        updateTimers();
+
+    },1000);
+}
+
+function stopTimer(){
+
+    clearInterval(timerInterval);
+    timerInterval = null;
+}
+
+function setStatus(text,active=false){
+
+    systemStatus.textContent = text;
+    statusDot.classList.toggle("active",active);
+}
+
+function setMessage(text,state="normal"){
+
+    mainMessage.textContent = text;
+
+    focusBadge.textContent =
+        state === "focused" ? "● FOCUSED" :
+        state === "warning" ? "⚠ WARNING" :
+        state === "sleep" ? "😴 SLEEP" :
+        state === "covered" ? "🙈 COVERED" :
+        "WAITING";
+
+    focusBadge.style.color =
+        state === "focused" ? "#35e69a" :
+        state === "warning" ? "#ffd166" :
+        state === "sleep" ? "#ff8fa3" :
+        state === "covered" ? "#ff8fa3" :
+        "#8ea5bd";
+}
+
+function logEvent(title,message){
+
+    const div = document.createElement("div");
+
+    div.className = "event";
+
+    const time = new Date().toLocaleTimeString();
+
+    div.innerHTML =
+        "<strong>" + time + " — " +
+        title + ":</strong> " +
+        message;
+
+    eventLog.prepend(div);
+
+    while(eventLog.children.length > 30){
+        eventLog.removeChild(eventLog.lastChild);
+    }
+}
+
+function addWarning(message,type="red"){
+
+    warnings++;
+
+    warningCountEl.textContent = warnings;
+
+    const div = document.createElement("div");
+
+    div.className =
+        "warning " + type;
+
+    div.textContent = message;
+
+    warningList.prepend(div);
+
+    while(warningList.children.length > 6){
+        warningList.removeChild(warningList.lastChild);
+    }
+
+    logEvent("Alert",message);
+}
+
+function speak(message){
+
+    if(
+        !voiceEnabled ||
+        !voiceToggle.checked ||
+        !("speechSynthesis" in window)
+    ){
+        return;
+    }
+
+    try{
+
+        speechSynthesis.cancel();
+
+        const utterance =
+            new SpeechSynthesisUtterance(message);
+
+        utterance.rate = .95;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        speechSynthesis.speak(utterance);
+
+    }catch(e){}
+}
+
+function warn(message,state="warning"){
+
+    const now = Date.now();
+
+    if(now - lastWarningTime < WARNING_COOLDOWN){
+        return;
+    }
+
+    lastWarningTime = now;
+
+    addWarning(message);
+
+    setMessage(message,state);
+
+    speak(message);
+}
+
+function distance(a,b){
+
+    if(!a || !b) return 999;
+
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+
+    return Math.sqrt(dx*dx + dy*dy);
+}
+
+function eyeAspectRatio(upper,lower,left,right){
+
+    const vertical = distance(upper,lower);
+    const horizontal = distance(left,right);
+
+    if(horizontal === 0) return 1;
+
+    return vertical / horizontal;
+}
+
+function detectEyes(face){
+
+    if(!face || face.length < 468){
+        return false;
+    }
+
+    /*
+      MediaPipe face landmarks:
+      Left eye:
+      upper ~159
+      lower ~145
+      corners ~33,133
+
+      Right eye:
+      upper ~386
+      lower ~374
+      corners ~362,263
+    */
+
+    const leftEAR = eyeAspectRatio(
+        face[159],
+        face[145],
+        face[33],
+        face[133]
+    );
+
+    const rightEAR = eyeAspectRatio(
+        face[386],
+        face[374],
+        face[362],
+        face[263]
+    );
+
+    const average =
+        (leftEAR + rightEAR) / 2;
+
+    return average < 0.18;
+}
+
+function detectHandCoveringFace(face,hand){
+
+    if(!face || !hand || hand.length < 21){
+        return false;
+    }
+
+    /*
+      Approximate face center and mouth.
+    */
+
+    const nose = face[1];
+    const mouth = face[13];
+
+    if(!nose || !mouth){
+        return false;
+    }
+
+    let closePoints = 0;
+
+    for(const point of hand){
+
+        if(
+            distance(point,mouth) < 0.13 ||
+            distance(point,nose) < 0.12
+        ){
+            closePoints++;
+        }
+    }
+
+    return closePoints >= 2;
+}
+
+function resizeCanvas(){
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+}
+
+function drawFace(face){
+
+    if(!face || !window.drawConnectors){
+        return;
+    }
+
+    ctx.save();
+
+    /*
+      Because video is mirrored visually,
+      mirror canvas too.
+    */
+
+    ctx.translate(canvas.width,0);
+    ctx.scale(-1,1);
+
+    drawConnectors(
+        ctx,
+        face,
+        FACEMESH_TESSELATION,
+        {
+            color:"rgba(34,199,255,.18)",
+            lineWidth:1
+        }
+    );
+
+    drawConnectors(
+        ctx,
+        face,
+        FACEMESH_FACE_OVAL,
+        {
+            color:"#22c7ff",
+            lineWidth:2
+        }
+    );
+
+    ctx.restore();
+}
+
+function processResults(results){
+
+    if(!running || paused){
+        return;
+    }
+
+    resizeCanvas();
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    const face = results.faceLandmarks;
+
+    const leftHand =
+        results.leftHandLandmarks;
+
+    const rightHand =
+        results.rightHandLandmarks;
+
+    if(face){
+
+        lastFaceSeen = Date.now();
+
+        faceStatusEl.textContent = "Detected";
+
+        drawFace(face);
+
+        let covered = false;
+
+        if(coverToggle.checked){
+
+            covered =
+                detectHandCoveringFace(
+                    face,
+                    leftHand
+                ) ||
+                detectHandCoveringFace(
+                    face,
+                    rightHand
+                );
+        }
+
+        if(covered){
+
+            currentState = "covered";
+
+            warn(
+                "Please move your hand away from your face and continue studying.",
+                "covered"
+            );
+
+            return;
+        }
+
+        if(
+            sleepToggle.checked &&
+            detectEyes(face)
+        ){
+
+            if(!eyesClosedSince){
+                eyesClosedSince = Date.now();
+            }
+
+            const closedFor =
+                Date.now() - eyesClosedSince;
+
+            if(closedFor > 2500){
+
+                currentState = "sleep";
+
+                warn(
+                    "Hey! You may be falling asleep. Sit up and continue studying.",
+                    "sleep"
+                );
+
+                return;
+            }
+
+        }else{
+
+            eyesClosedSince = 0;
+        }
+
+        currentState = "focused";
+
+        setMessage(
+            "Great! Keep studying. Stay focused.",
+            "focused"
+        );
+
+    }else{
+
+        faceStatusEl.textContent = "Not detected";
+
+        if(
+            faceToggle.checked &&
+            Date.now() - lastFaceSeen > 2500
+        ){
+
+            currentState = "warning";
+
+            warn(
+                "I cannot see your face. Please sit in front of the camera.",
+                "warning"
+            );
+
+        }else{
+
+            currentState = "waiting";
+
+            setMessage(
+                "Looking for your face...",
+                "warning"
+            );
+        }
+    }
+}
+
+async function setupAI(){
+
+    holistic = new Holistic({
+        locateFile: (file)=>{
+            return
+            `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
+        }
+    });
+
+    /*
+      Important:
+      MediaPipe requires the locateFile callback
+      to return the CDN path.
+    */
+
+    holistic.setOptions({
+
+        modelComplexity:1,
+
+        smoothLandmarks:true,
+
+        enableSegmentation:false,
+
+        smoothSegmentation:false,
+
+        refineFaceLandmarks:true,
+
+        minDetectionConfidence:.55,
+
+        minTrackingConfidence:.55
+
+    });
+
+    holistic.onResults(processResults);
+}
+
+async function startGuardian(){
+
+    if(running){
+        return;
+    }
+
+    try{
+
+        setStatus(
+            "Requesting camera...",
+            false
+        );
+
+        mainMessage.textContent =
+            "Please allow camera access.";
+
+        stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video:{
+                    facingMode:"user",
+                    width:{
+                        ideal:1280
+                    },
+                    height:{
+                        ideal:720
+                    }
+                },
+
+                audio:false
+            });
+
+        video.srcObject = stream;
+
+        await video.play();
+
+        resizeCanvas();
+
+        if(!holistic){
+            await setupAI();
+        }
+
+        running = true;
+        paused = false;
+
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        pauseBtn.disabled = false;
+
+        setStatus(
+            "Guardian active",
+            true
+        );
+
+        setMessage(
+            "AI Guardian is watching. Start studying!",
+            "focused"
+        );
+
+        logEvent(
+            "Started",
+            "AI Study Guardian is active."
+        );
+
+        startTimer();
+
+        camera = new Camera(
+            video,
+            {
+                onFrame: async ()=>{
+                    if(
+                        running &&
+                        !paused &&
+                        holistic
+                    ){
+                        await holistic.send({
+                            image:video
+                        });
+                    }
+                },
+
+                width:1280,
+                height:720
+            }
+        );
+
+        camera.start();
+
+    }catch(error){
+
+        console.error(error);
+
+        setStatus(
+            "Camera error",
+            false
+        );
+
+        setMessage(
+            "Camera could not be started. Please allow camera permission and use HTTPS or localhost.",
+            "warning"
+        );
+
+        logEvent(
+            "Error",
+            error.message || "Unable to access camera."
+        );
+    }
+}
+
+function stopGuardian(){
+
+    running = false;
+    paused = false;
+
+    stopTimer();
+
+    if(camera){
+        try{
+            camera.stop();
+        }catch(e){}
+        camera = null;
+    }
+
+    if(stream){
+
+        stream.getTracks().forEach(
+            track=>track.stop()
+        );
+
+        stream = null;
+    }
+
+    video.srcObject = null;
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    pauseBtn.disabled = true;
+
+    pauseBtn.textContent = "⏸ Pause";
+
+    setStatus(
+        "System stopped",
+        false
+    );
+
+    faceStatusEl.textContent = "—";
+
+    setMessage(
+        "Guardian stopped. Press Start to begin.",
+        "normal"
+    );
+
+    logEvent(
+        "Stopped",
+        "Study Guardian has been stopped."
+    );
+}
+
+function togglePause(){
+
+    if(!running){
+        return;
+    }
+
+    paused = !paused;
+
+    if(paused){
+
+        pauseBtn.textContent = "▶ Resume";
+
+        setStatus(
+            "Paused",
+            false
+        );
+
+        setMessage(
+            "Guardian paused. Take your break.",
+            "normal"
+        );
+
+        logEvent(
+            "Paused",
+            "Monitoring paused."
+        );
+
+    }else{
+
+        pauseBtn.textContent = "⏸ Pause";
+
+        setStatus(
+            "Guardian active",
+            true
+        );
+
+        setMessage(
+            "Welcome back. Keep studying!",
+            "focused"
+        );
+
+        logEvent(
+            "Resumed",
+            "Monitoring resumed."
+        );
+    }
+}
+
+startBtn.addEventListener(
+    "click",
+    startGuardian
+);
+
+stopBtn.addEventListener(
+    "click",
+    stopGuardian
+);
+
+pauseBtn.addEventListener(
+    "click",
+    togglePause
+);
+
+voiceBtn.addEventListener(
+    "click",
+    ()=>{
+        voiceEnabled = !voiceEnabled;
+
+        voiceBtn.textContent =
+            voiceEnabled
+            ? "🔊 Voice ON"
+            : "🔇 Voice OFF";
+
+        voiceToggle.checked =
+            voiceEnabled;
+
+        if(voiceEnabled){
+            speak("Voice warnings enabled.");
+        }
+    }
+);
+
+voiceToggle.addEventListener(
+    "change",
+    ()=>{
+        voiceEnabled =
+            voiceToggle.checked;
+
+        voiceBtn.textContent =
+            voiceEnabled
+            ? "🔊 Voice ON"
+            : "🔇 Voice OFF";
+    }
+);
+
+setGoalBtn.addEventListener(
+    "click",
+    ()=>{
+        let value =
+            parseInt(goalInput.value,10);
+
+        if(!Number.isFinite(value)){
+            value = 60;
+        }
+
+        value =
+            Math.max(
+                1,
+                Math.min(1440,value)
+            );
+
+        dailyGoal = value;
+
+        goalInput.value = value;
+
+        goalText.textContent =
+            value + " min";
+
+        updateTimers();
+
+        logEvent(
+            "Goal",
+            "Daily study goal set to " +
+            value +
+            " minutes."
+        );
+    }
+);
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
+
+window.addEventListener(
+    "beforeunload",
+    ()=>{
+        stopGuardian();
+    }
+);
+
+updateTimers();
+
+</script>
+
+</body>
+</html>
